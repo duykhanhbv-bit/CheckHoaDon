@@ -26,6 +26,24 @@
 
 ---
 
+## 📸 Ảnh demo giao diện
+
+> 🔒 Dữ liệu trong ảnh là lịch sử tra cứu thật đã được **che một nửa nội dung mỗi ô** (MST, tên, số hóa đơn, số tiền…) và làm mờ ảnh bằng chứng trước khi chụp.
+
+**Tab 1 – Tra cứu hóa đơn điện tử (PDF / XML / ZIP)**
+
+![Tab 1 – Tra cứu hóa đơn điện tử](docs/images/tab1_tra_cuu_hoa_don.png)
+
+**Tab 2 – Tra cứu người nộp thuế theo MST**
+
+![Tab 2 – Tra cứu người nộp thuế](docs/images/tab2_nguoi_nop_thue.png)
+
+**Tab 3 – Đọc & xác thực hóa đơn XML**
+
+![Tab 3 – Xác thực hóa đơn XML](docs/images/tab3_xac_thuc_xml.png)
+
+---
+
 ## 🧭 Ba nghiệp vụ chính
 
 ```mermaid
