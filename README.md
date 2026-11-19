@@ -9,6 +9,25 @@
 >
 > Tải hóa đơn lên (PDF / XML / ZIP) hoặc nhập MST, hệ thống tự bóc tách thông tin, điền form, tự giải mã Captcha bằng AI và **chụp ảnh màn hình có đóng dấu thời gian** làm bằng chứng đối soát.
 
+### 🖼️ Kết quả bằng chứng mẫu do hệ thống tự chụp
+
+Mỗi lần tra cứu, robot tự chụp toàn màn hình (kèm thanh địa chỉ, đồng hồ Taskbar) và đóng **badge xác nhận có dấu thời gian** ở góc dưới phải:
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/images/demo_tab1_xac_nhan_hoa_don.png" alt="Ảnh xác nhận tra cứu hóa đơn điện tử"></td>
+    <td width="33%"><img src="docs/images/demo_tab2_xac_nhan_nnt.png" alt="Ảnh xác nhận tra cứu người nộp thuế"></td>
+    <td width="33%"><img src="docs/images/demo_tab3_ban_chup_xac_nhan_xml.png" alt="Bản chụp phần xác nhận hóa đơn XML"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Tab 1</b> – Xác nhận hóa đơn tồn tại trên Cổng Thuế</td>
+    <td align="center"><b>Tab 2</b> – Xác nhận người nộp thuế đang hoạt động</td>
+    <td align="center"><b>Tab 3</b> – Bản chụp phần xác nhận hóa đơn XML</td>
+  </tr>
+</table>
+
+> 🔒 Ảnh minh họa đã được **che một nửa các thông tin định danh** (MST, số hóa đơn, tên đơn vị, địa chỉ, số tiền, số serial chứng thư số…).
+
 ---
 
 ## ✨ Tính năng nổi bật
