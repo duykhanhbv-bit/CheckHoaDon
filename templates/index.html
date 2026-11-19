@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tra Cứu Hóa Đơn Điện Tử, Người Nộp Thuế & Đọc XML (RPA + AI Captcha)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gradient-to-r from-red-700 via-rose-700 to-red-800 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-red-700 p-2.5 rounded-xl shadow-sm flex items-center justify-center">
+                    <i class="fa-solid fa-file-invoice-dollar text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Hệ Thống Tra Cứu Hóa Đơn & Người Nộp Thuế</h1>
+                    <p class="text-xs text-red-100 flex items-center gap-2">
+                        <span><i class="fa-solid fa-robot"></i> Playwright RPA</span>
+                        <span>•</span>
+                        <span><i class="fa-solid fa-brain"></i> AI Captcha OCR (100% Offline)</span>
+                        <span>•</span>
+                        <span><i class="fa-solid fa-file-code"></i> Đọc & Xác Thực XML</span>
+                        <span>•</span>
+                        <span><i class="fa-solid fa-stamp"></i> Bản Chụp Xác Nhận</span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-xs">
+                <span class="bg-white/15 text-white px-2.5 py-1.5 rounded-lg font-mono font-bold text-xs border border-white/20 tracking-wider shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-amber-300"></i> NDKBVH
+                </span>
+                <span id="appVersionBadge" class="bg-amber-400 text-slate-900 font-bold px-2.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1"><i class="fa-solid fa-code-branch text-[10px]"></i> v1.4</span>
+                <a href="https://hoadondientu.gdt.gov.vn/" target="_blank" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 font-medium border border-white/20">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Cổng HĐĐT
+                </a>
+                <a href="https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp" target="_blank" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 font-medium border border-white/20">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Cổng NNT
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+        <!-- Top Triple-Tab Navigation -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" id="tabBtnInvoice" onclick="switchTab('invoice')" 
+                        class="tab-btn px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition bg-red-600 text-white shadow-sm">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    1. Tra Cứu Hóa Đơn Điện Tử
+                </button>
+                <button type="button" id="tabBtnTaxpayer" onclick="switchTab('taxpayer')" 
+                        class="tab-btn px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition text-slate-600 hover:text-red-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-building-columns"></i>
+                    2. Tra Cứu Người Nộp Thuế (MST)
+                </button>
+                <button type="button" id="tabBtnXml" onclick="switchTab('xml')" 
+                        class="tab-btn px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition text-slate-600 hover:text-emerald-700 hover:bg-emerald-50">
+                    <i class="fa-solid fa-file-code text-emerald-600"></i>
+                    3. Đọc Hóa Đơn XML (Nhận Bản Chụp Xác Nhận)
+                </button>
+            </div>
+            <div class="flex items-center gap-2 pr-2 text-xs text-slate-500">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    Playwright Sẵn Sàng
+                </span>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                    <span class="w-2 h-2 mr-1.5 bg-blue-500 rounded-full"></span>
+                    AI OCR (ddddocr)
+                </span>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 1: TRA CỨU HÓA ĐƠN ĐIỆN TỬ (HOADONDIENTU.GDT.GOV.VN)                   -->
+        <!-- ========================================================================= -->
+        <div id="tabContentInvoice" class="space-y-5">
+
+            <!-- Banner Instruction -->
+            <div class="bg-white border-l-4 border-red-600 rounded-r-xl shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-circle-info text-red-600 text-xl mt-0.5"></i>
+                    <div>
+                        <h2 class="font-semibold text-slate-800 text-sm">Tra Cứu Hóa Đơn Điện Tử Đa Định Dạng (PDF, XML, ZIP)</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Tự động bóc tách thông tin hóa đơn, điều khiển Playwright tuần tự vượt Captcha bằng AI OCR, chụp ảnh đóng dấu thời gian và xuất Báo cáo đối soát Excel.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Card (Drag & Drop Zone) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold">1</span>
+                        Tải Lên Hóa Đơn (Chọn Một Hoặc Nhiều Tệp)
+                    </h2>
+                    <span class="text-xs text-slate-400 font-medium">Hỗ trợ .PDF, .XML (TT78), .ZIP (chứa nhiều HĐ)</span>
+                </div>
+
+                <!-- Drop Zone -->
+                <div id="dropZone" class="border-2 border-dashed border-slate-300 hover:border-red-500 bg-slate-50/60 hover:bg-red-50/30 rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 relative">
+                    <input type="file" id="fileInput" accept=".pdf,.xml,.zip" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                    <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div class="text-sm font-medium text-slate-700">
+                        Kéo thả một hoặc nhiều tệp hóa đơn vào đây hoặc <span class="text-red-600 font-semibold underline">Duyệt tệp từ máy</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Giữ Ctrl hoặc Shift để chọn nhiều file cùng lúc, hoặc tải 1 file ZIP chứa hàng chục hóa đơn</p>
+                </div>
+
+                <div id="uploadLoader" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-center gap-2 text-xs text-red-700 font-medium">
+                    <i class="fa-solid fa-circle-notch fa-spin text-base"></i>
+                    <span>Đang tải lên và phân tích bóc tách các tệp hóa đơn...</span>
+                </div>
+            </div>
+
+            <!-- Batch Queue & Control Section -->
+            <div id="queueSection" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                
+                <!-- Queue Header & Action Bar -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm font-bold">2</div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                Danh Sách Hóa Đơn Cần Tra Cứu
+                                <span id="queueCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">0 hóa đơn</span>
+                            </h2>
+                            <p class="text-xs text-slate-400">Kiểm tra thông tin đã bóc tách, có thể chỉnh sửa trực tiếp trước khi bắt đầu tra cứu</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <label class="inline-flex items-center cursor-pointer gap-2 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl text-xs transition" title="Tắt để mở trình duyệt và chụp toàn màn hình máy tính (gồm URL web & khung ngày giờ Windows)">
+                            <input type="checkbox" id="headlessCheckbox" class="sr-only peer">
+                            <div class="relative w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-red-600"></div>
+                            <span id="headlessLabel" class="font-semibold text-slate-700">Mở trình duyệt (Chụp toàn màn hình)</span>
+                        </label>
+
+                        <button type="button" id="btnStartBatch" class="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Bắt Đầu Tra Cứu Toàn Bộ</span>
+                        </button>
+
+                        <button type="button" id="btnPauseBatch" class="hidden bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-pause"></i>
+                            <span>Tạm Dừng</span>
+                        </button>
+
+                        <button type="button" id="btnExportExcel" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Xuất Excel (.xlsx)</span>
+                        </button>
+
+                        <button type="button" id="btnDownloadZip" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-file-zipper"></i>
+                            <span>Tải Ảnh (.zip)</span>
+                        </button>
+
+                        <button type="button" id="btnTransferMstToNnt" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-2 rounded-xl border border-blue-200 shadow-sm transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                            <span>Tra Cứu MST Các HĐ Này (Tab 2)</span>
+                        </button>
+
+                        <button type="button" id="btnClearQueue" class="text-xs text-slate-400 hover:text-red-600 px-2 py-1 flex items-center gap-1 transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa hết
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Bar & Stats Chips -->
+                <div id="progressContainer" class="hidden space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                        <span id="progressText" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin text-red-600"></i> Đang xử lý: 0/0 hóa đơn (0%)
+                        </span>
+                        <div class="flex items-center gap-2 text-[11px]">
+                            <span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-md font-mono" id="statTotal">Tổng: 0</span>
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-md font-mono" id="statPending">Chờ: 0</span>
+                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-mono" id="statFound">Hợp lệ: 0</span>
+                            <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md font-mono" id="statNotFound">Không thấy: 0</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="progressBarFill" class="bg-gradient-to-r from-red-600 to-rose-500 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="text-[11px] text-slate-500 uppercase bg-slate-100 border-b border-slate-200 font-semibold">
+                            <tr>
+                                <th class="py-2.5 px-3 text-center w-10">STT</th>
+                                <th class="py-2.5 px-3 min-w-[160px]">Tệp Hóa Đơn</th>
+                                <th class="py-2.5 px-3 min-w-[130px]">MST Người Bán (*)</th>
+                                <th class="py-2.5 px-3 min-w-[90px]">Ký Hiệu (*)</th>
+                                <th class="py-2.5 px-3 min-w-[90px]">Số HĐ (*)</th>
+                                <th class="py-2.5 px-3 min-w-[100px] text-right">Tổng Tiền Thuế</th>
+                                <th class="py-2.5 px-3 min-w-[110px] text-right">Tổng Thanh Toán</th>
+                                <th class="py-2.5 px-3 min-w-[130px] text-center">Trạng Thái Cổng Thuế</th>
+                                <th class="py-2.5 px-3 min-w-[90px] text-center">Bằng Chứng</th>
+                                <th class="py-2.5 px-3 min-w-[90px] text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queueTableBody" class="divide-y divide-slate-100">
+                            <tr id="emptyQueueRow">
+                                <td colspan="10" class="py-10 text-center text-slate-400">
+                                    <i class="fa-solid fa-folder-open text-3xl mb-2 block opacity-40"></i>
+                                    Chưa có hóa đơn nào trong danh sách. Hãy kéo thả hoặc chọn tệp hóa đơn ở trên để bắt đầu.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- Terminal & Screenshot Preview -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Terminal (7 cols) -->
+                <div class="lg:col-span-7 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 p-4 text-slate-200 flex flex-col">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                            <span class="font-mono text-slate-400 ml-2 font-medium">Nhật Ký Tiến Trình RPA HĐĐT (Live Console)</span>
+                        </div>
+                        <div id="rpaStatusIndicator" class="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+                            <span class="w-2 h-2 rounded-full bg-slate-500"></span> Chờ lệnh
+                        </div>
+                    </div>
+                    <div id="logConsole" class="font-mono text-xs text-emerald-400 p-3 h-64 overflow-y-auto space-y-1.5 bg-black/40 rounded-lg mt-3 border border-slate-800/80 flex-grow">
+                        <p class="text-slate-500">Hệ thống sẵn sàng. Tải tệp hóa đơn lên và nhấn 'Bắt Đầu Tra Cứu Toàn Bộ'...</p>
+                    </div>
+                </div>
+
+                <!-- Active Screenshot Preview (5 cols) -->
+                <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved text-red-600"></i>
+                                Ảnh Xác Nhận HĐĐT Đang Xem
+                            </h2>
+                            <span id="activeResultBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                                Chưa có ảnh
+                            </span>
+                        </div>
+
+                        <div id="activeResultDetails" class="hidden p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1 mb-3">
+                            <div id="activeResultTitle" class="font-bold text-slate-800"></div>
+                            <div id="activeResultSub" class="text-slate-500 text-[11px]"></div>
+                        </div>
+
+                        <div class="relative bg-slate-100 rounded-xl overflow-hidden border border-slate-200 group flex items-center justify-center min-h-[220px]">
+                            <div id="activeScreenshotPlaceholder" class="text-center p-6 text-slate-400 text-xs">
+                                <i class="fa-solid fa-image text-3xl mb-2 block opacity-40"></i>
+                                Ảnh chụp màn hình có dấu thời gian của hóa đơn đang chọn sẽ hiển thị tại đây.
+                            </div>
+
+                            <img id="activeScreenshotImg" src="" alt="Ảnh xác nhận hóa đơn" class="hidden w-full h-auto object-cover cursor-pointer hover:opacity-95 transition" onclick="openLightbox(this.src)">
+                            
+                            <div id="activeScreenshotOverlay" class="hidden absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                <button type="button" onclick="openLightbox(document.getElementById('activeScreenshotImg').src)" class="bg-white/95 hover:bg-white text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i> Phóng to ảnh
+                                </button>
+                                <a id="btnDownloadActiveScreenshot" href="#" download class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> Tải về
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-slate-400 text-center pt-2">
+                        💡 Nhấp vào biểu tượng máy ảnh ở bất kỳ dòng nào trong bảng để xem ảnh xác nhận tương ứng.
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-red-600 text-lg"></i>
+                        <h2 class="text-base font-bold text-slate-800">Lịch Sử Tra Cứu Hóa Đơn Điện Tử</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btnExportHistoryExcel" class="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-semibold transition">
+                            <i class="fa-solid fa-file-excel"></i> Xuất Excel lịch sử
+                        </button>
+                        <button type="button" id="btnClearHistory" class="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 font-medium transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa lịch sử
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="text-[11px] text-slate-500 uppercase bg-slate-50 border-y border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3">Thời Gian</th>
+                                <th class="py-2.5 px-3">MST Người Bán</th>
+                                <th class="py-2.5 px-3">Ký Hiệu</th>
+                                <th class="py-2.5 px-3">Số HĐ</th>
+                                <th class="py-2.5 px-3">Tổng Tiền</th>
+                                <th class="py-2.5 px-3">Trạng Thái</th>
+                                <th class="py-2.5 px-3 text-right">Ảnh Xác Nhận</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="7" class="py-6 text-center text-slate-400">Đang tải lịch sử tra cứu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 2: TRA CỨU NGƯỜI NỘP THUẾ - MST DOANH NGHIỆP (TRACUUNNT.GDT.GOV.VN)   -->
+        <!-- ========================================================================= -->
+        <div id="tabContentTaxpayer" class="hidden space-y-5">
+
+            <!-- Banner Instruction -->
+            <div class="bg-white border-l-4 border-blue-600 rounded-r-xl shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-building-columns text-blue-600 text-xl mt-0.5"></i>
+                    <div>
+                        <h2 class="font-semibold text-slate-800 text-sm">Tra Cứu Thông Tin Người Nộp Thuế Tại Cục Thuế - Bộ Tài Chính</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Truy cập trực tiếp <b>https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp</b>, tự động giải mã Captcha bằng AI OCR, kiểm tra trạng thái hoạt động (Đang hoạt động / Ngừng hoạt động) và chụp ảnh lưu bằng chứng.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                        <i class="fa-solid fa-shield-check mr-1.5"></i> Cục Thuế - Bộ Tài Chính
+                    </span>
+                </div>
+            </div>
+
+            <!-- NNT Upload & Input Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">1</span>
+                            Tải Hóa Đơn Lên Để Bóc Tách & Tra Cứu MST Tự Động
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Tải tệp hóa đơn lên để AI bóc tách MST người bán, hoặc nhập trực tiếp mã số thuế</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <label class="inline-flex items-center cursor-pointer gap-2 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl text-xs border border-blue-200 transition">
+                            <input type="checkbox" id="nntAutoRunCheckbox" checked class="accent-blue-600 w-4 h-4 cursor-pointer">
+                            <span class="font-bold text-blue-800">Tự động tra cứu ngay</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer gap-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl text-xs transition" title="Tắt để mở trình duyệt và chụp toàn màn hình máy tính (gồm URL web & khung ngày giờ Windows)">
+                            <input type="checkbox" id="nntHeadlessCheckbox" class="sr-only peer">
+                            <div class="relative w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span id="nntHeadlessLabel" class="font-semibold text-slate-700">Mở trình duyệt (Chụp toàn màn hình)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Drop Zone for NNT -->
+                <div id="nntDropZone" class="border-2 border-dashed border-blue-200 hover:border-blue-500 bg-blue-50/40 hover:bg-blue-50/70 rounded-xl p-5 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 relative">
+                    <input type="file" id="nntFileInput" accept=".pdf,.xml,.zip" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                    <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg shadow-inner">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div class="text-sm font-medium text-slate-700">
+                        Kéo thả một hoặc nhiều tệp hóa đơn vào đây hoặc <span class="text-blue-600 font-bold underline">Duyệt tệp từ máy</span>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        Hỗ trợ .PDF, .XML (TT78), .ZIP (chứa nhiều hóa đơn) • AI tự trích xuất MST người bán, lọc trùng và đưa vào tra cứu
+                    </p>
+                </div>
+
+                <div id="nntUploadLoader" class="hidden p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-center gap-2 text-xs text-blue-800 font-medium">
+                    <i class="fa-solid fa-circle-notch fa-spin text-base text-blue-600"></i>
+                    <span>Đang tải lên và phân tích bóc tách Mã số thuế từ các hóa đơn...</span>
+                </div>
+
+                <!-- Manual options divider & small inputs -->
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-slate-200"></div>
+                    <span class="flex-shrink mx-3 text-slate-400 text-xs font-semibold uppercase">Hoặc Nhập Thủ Công</span>
+                    <div class="flex-grow border-t border-slate-200"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Quick Single MST Input (5 cols) -->
+                    <div class="md:col-span-5 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                        <label class="block font-semibold text-slate-700 text-xs">
+                            <i class="fa-solid fa-id-card text-blue-600 mr-1"></i>
+                            Tra Cứu Nhanh 1 Mã Số Thuế:
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="nntSingleMstInput" placeholder="Ví dụ: 0110269067 hoặc 0100109106" 
+                                   class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-800 text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <button type="button" id="btnNntSingleSearch" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1 text-xs whitespace-nowrap">
+                                <i class="fa-solid fa-bolt"></i> Tra Cứu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Batch MST Input (7 cols) -->
+                    <div class="md:col-span-7 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block font-semibold text-slate-700 text-xs">
+                                <i class="fa-solid fa-list-ol text-blue-600 mr-1"></i>
+                                Dán Danh Sách Nhiều MST (Mỗi MST 1 dòng):
+                            </label>
+                        </div>
+                        <div class="flex gap-2">
+                            <textarea id="nntBatchTextarea" rows="1" placeholder="0110269067&#10;0311850539" 
+                                      class="w-full px-3 py-1 bg-white border border-slate-300 rounded-lg text-slate-800 text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></textarea>
+                            <button type="button" id="btnNntAddBatch" class="bg-slate-700 hover:bg-slate-800 active:bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 text-xs whitespace-nowrap">
+                                <i class="fa-solid fa-plus"></i> Nạp vào danh sách
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NNT Queue & Results Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">2</div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                Danh Sách Kết Quả Tra Cứu Người Nộp Thuế
+                                <span id="nntQueueCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">0 MST</span>
+                            </h2>
+                            <p class="text-xs text-slate-400">Tình trạng hoạt động của người nộp thuế ghi nhận trực tiếp từ Cục Thuế</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <button type="button" id="btnNntStartBatch" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Tra Cứu Hàng Loạt</span>
+                        </button>
+
+                        <button type="button" id="btnNntPauseBatch" class="hidden bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-pause"></i>
+                            <span>Tạm Dừng</span>
+                        </button>
+
+                        <button type="button" id="btnNntExportExcel" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Xuất Excel NNT (.xlsx)</span>
+                        </button>
+
+                        <button type="button" id="btnNntDownloadZip" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-file-zipper"></i>
+                            <span>Tải Ảnh NNT (.zip)</span>
+                        </button>
+
+                        <button type="button" id="btnNntClearQueue" class="text-xs text-slate-400 hover:text-red-600 px-2 py-1 flex items-center gap-1 transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa danh sách
+                        </button>
+                    </div>
+                </div>
+
+                <!-- NNT Progress Bar -->
+                <div id="nntProgressContainer" class="hidden space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                        <span id="nntProgressText" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin text-blue-600"></i> Đang xử lý: 0/0 MST (0%)
+                        </span>
+                        <div class="flex items-center gap-2 text-[11px]">
+                            <span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-md font-mono" id="nntStatTotal">Tổng: 0</span>
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-md font-mono" id="nntStatPending">Chờ: 0</span>
+                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-mono" id="nntStatActive">Đang HĐ: 0</span>
+                            <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md font-mono" id="nntStatInactive">Ngừng HĐ/Lỗi: 0</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="nntProgressBarFill" class="bg-gradient-to-r from-blue-600 to-cyan-500 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- NNT Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="text-[11px] text-slate-500 uppercase bg-slate-100 border-b border-slate-200 font-semibold">
+                            <tr>
+                                <th class="py-2.5 px-3 text-center w-10">STT</th>
+                                <th class="py-2.5 px-3 min-w-[120px]">Mã Số Thuế</th>
+                                <th class="py-2.5 px-3 min-w-[150px]">Hóa Đơn / Tệp Nguồn</th>
+                                <th class="py-2.5 px-3 min-w-[200px]">Tên Người Nộp Thuế</th>
+                                <th class="py-2.5 px-3 min-w-[220px]">Địa Chỉ Trụ Sở / Kinh Doanh</th>
+                                <th class="py-2.5 px-3 min-w-[150px]">Cơ Quan Thuế Quản Lý</th>
+                                <th class="py-2.5 px-3 min-w-[130px] text-center">Trạng Thái MST</th>
+                                <th class="py-2.5 px-3 min-w-[90px] text-center">Bằng Chứng</th>
+                                <th class="py-2.5 px-3 min-w-[80px] text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nntQueueTableBody" class="divide-y divide-slate-100">
+                            <tr id="nntEmptyQueueRow">
+                                <td colspan="9" class="py-10 text-center text-slate-400">
+                                    <i class="fa-solid fa-building-circle-check text-3xl mb-2 block opacity-40"></i>
+                                    Chưa có mã số thuế nào được nạp. Hãy tải tệp hóa đơn lên ở trên hoặc nhập MST để bắt đầu tra cứu.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Terminal & Screenshot Preview for NNT -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- NNT Terminal (7 cols) -->
+                <div class="lg:col-span-7 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 p-4 text-slate-200 flex flex-col">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                            <span class="font-mono text-slate-400 ml-2 font-medium">Nhật Ký RPA Tra Cứu NNT (Live Console)</span>
+                        </div>
+                        <div id="nntRpaStatusIndicator" class="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+                            <span class="w-2 h-2 rounded-full bg-slate-500"></span> Chờ lệnh
+                        </div>
+                    </div>
+                    <div id="nntLogConsole" class="font-mono text-xs text-cyan-400 p-3 h-64 overflow-y-auto space-y-1.5 bg-black/40 rounded-lg mt-3 border border-slate-800/80 flex-grow">
+                        <p class="text-slate-500">Hệ thống sẵn sàng tra cứu Người Nộp Thuế trên cổng tracuunnt.gdt.gov.vn...</p>
+                    </div>
+                </div>
+
+                <!-- Active Screenshot Preview for NNT (5 cols) -->
+                <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved text-blue-600"></i>
+                                Ảnh Xác Nhận NNT Đang Xem
+                            </h2>
+                            <span id="nntActiveResultBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                                Chưa có ảnh
+                            </span>
+                        </div>
+
+                        <div id="nntActiveResultDetails" class="hidden p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1 mb-3">
+                            <div id="nntActiveResultTitle" class="font-bold text-slate-800"></div>
+                            <div id="nntActiveResultSub" class="text-slate-500 text-[11px]"></div>
+                        </div>
+
+                        <div class="relative bg-slate-100 rounded-xl overflow-hidden border border-slate-200 group flex items-center justify-center min-h-[220px]">
+                            <div id="nntActiveScreenshotPlaceholder" class="text-center p-6 text-slate-400 text-xs">
+                                <i class="fa-solid fa-image text-3xl mb-2 block opacity-40"></i>
+                                Ảnh chụp màn hình tra cứu NNT có dấu thời gian sẽ hiển thị tại đây.
+                            </div>
+
+                            <img id="nntActiveScreenshotImg" src="" alt="Ảnh xác nhận NNT" class="hidden w-full h-auto object-cover cursor-pointer hover:opacity-95 transition" onclick="openLightbox(this.src)">
+                            
+                            <div id="nntActiveScreenshotOverlay" class="hidden absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                <button type="button" onclick="openLightbox(document.getElementById('nntActiveScreenshotImg').src)" class="bg-white/95 hover:bg-white text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i> Phóng to ảnh
+                                </button>
+                                <a id="btnDownloadNntActiveScreenshot" href="#" download class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> Tải về
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-slate-400 text-center pt-2">
+                        💡 Nhấp vào biểu tượng máy ảnh ở bất kỳ dòng nào trong bảng để xem ảnh xác nhận NNT tương ứng.
+                    </div>
+                </div>
+            </div>
+
+            <!-- NNT History Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-blue-600 text-lg"></i>
+                        <h2 class="text-base font-bold text-slate-800">Lịch Sử Tra Cứu Người Nộp Thuế</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btnExportNntHistoryExcel" class="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-semibold transition">
+                            <i class="fa-solid fa-file-excel"></i> Xuất Excel lịch sử
+                        </button>
+                        <button type="button" id="btnClearNntHistory" class="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 font-medium transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa lịch sử NNT
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="text-[11px] text-slate-500 uppercase bg-slate-50 border-y border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3">Thời Gian</th>
+                                <th class="py-2.5 px-3">Mã Số Thuế</th>
+                                <th class="py-2.5 px-3">Tên Người Nộp Thuế</th>
+                                <th class="py-2.5 px-3">Cơ Quan Thuế Quản Lý</th>
+                                <th class="py-2.5 px-3">Trạng Thái MST</th>
+                                <th class="py-2.5 px-3 text-right">Ảnh Xác Nhận</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nntHistoryTableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="6" class="py-6 text-center text-slate-400">Đang tải lịch sử tra cứu NNT...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 3: ĐỌC HÓA ĐƠN XML & NHẬN BẢN CHỤP PHẦN XÁC NHẬN                      -->
+        <!-- ========================================================================= -->
+        <div id="tabContentXml" class="hidden space-y-5">
+
+            <!-- Banner Instruction -->
+            <div class="bg-white border-l-4 border-emerald-600 rounded-r-xl shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-file-code text-emerald-600 text-xl mt-0.5"></i>
+                    <div>
+                        <h2 class="font-semibold text-slate-800 text-sm">Đọc & Xác Thực Hóa Đơn XML Trực Tiếp Trên Cổng Thuế (hoadondientu.gdt.gov.vn)</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Tự động nạp file <b>.XML</b> vào tab <b>"Đọc hóa đơn XML"</b> của Tổng cục Thuế, giải mã Captcha bằng AI OCR, kiểm tra chữ ký số và <b>xuất bản chụp phần xác nhận chuẩn</b>.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        <i class="fa-solid fa-stamp mr-1.5"></i> Trả Lại Bản Chụp Xác Nhận Chuẩn
+                    </span>
+                </div>
+            </div>
+
+            <!-- Upload Card (Drag & Drop Zone) for XML -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
+                        Tải Lên Tệp Hóa Đơn XML
+                    </h2>
+                    <span class="text-xs text-slate-400 font-medium">Hỗ trợ .XML (TT78/NĐ123), .ZIP (chứa nhiều tệp XML)</span>
+                </div>
+
+                <!-- Drop Zone -->
+                <div id="xmlDropZone" class="border-2 border-dashed border-emerald-200 hover:border-emerald-500 bg-emerald-50/30 hover:bg-emerald-50/60 rounded-xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 relative">
+                    <input type="file" id="xmlFileInput" accept=".xml,.zip" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                    <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-file-code"></i>
+                    </div>
+                    <div class="text-sm font-medium text-slate-700">
+                        Kéo thả một hoặc nhiều tệp XML vào đây hoặc <span class="text-emerald-700 font-bold underline">Duyệt tệp từ máy</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Hỗ trợ chọn nhiều file XML cùng lúc hoặc tệp ZIP đóng gói hóa đơn điện tử</p>
+                </div>
+
+                <div id="xmlUploadLoader" class="hidden p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-center gap-2 text-xs text-emerald-800 font-medium">
+                    <i class="fa-solid fa-circle-notch fa-spin text-base text-emerald-600"></i>
+                    <span>Đang tải lên và phân tích bóc tách các tệp hóa đơn XML...</span>
+                </div>
+            </div>
+
+            <!-- XML Queue & Control Section -->
+            <div id="xmlQueueSection" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                
+                <!-- Queue Header & Action Bar -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">2</div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                Danh Sách Hóa Đơn XML Cần Tra Cứu & Xác Thực
+                                <span id="xmlQueueCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">0 hóa đơn</span>
+                            </h2>
+                            <p class="text-xs text-slate-400">Hệ thống sẽ nạp từng file XML vào Cổng Thuế để kiểm tra tính hợp lệ và chữ ký số</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <label class="inline-flex items-center cursor-pointer gap-2 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl text-xs transition" title="Tắt để mở trình duyệt và chụp toàn màn hình máy tính (gồm URL web & khung ngày giờ Windows)">
+                            <input type="checkbox" id="xmlHeadlessCheckbox" class="sr-only peer">
+                            <div class="relative w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
+                            <span id="xmlHeadlessLabel" class="font-semibold text-slate-700">Mở trình duyệt (Chụp toàn màn hình)</span>
+                        </label>
+
+                        <button type="button" id="btnXmlStartBatch" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-play"></i>
+                            <span>Bắt Đầu Tra Cứu & Xác Thực XML</span>
+                        </button>
+
+                        <button type="button" id="btnXmlPauseBatch" class="hidden bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-pause"></i>
+                            <span>Tạm Dừng</span>
+                        </button>
+
+                        <button type="button" id="btnXmlExportExcel" class="bg-teal-700 hover:bg-teal-800 text-white font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Xuất Excel XML (.xlsx)</span>
+                        </button>
+
+                        <button type="button" id="btnXmlDownloadZip" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-file-zipper"></i>
+                            <span>Tải Bản Chụp Xác Nhận (.zip)</span>
+                        </button>
+
+                        <button type="button" id="btnXmlClearQueue" class="text-xs text-slate-400 hover:text-red-600 px-2 py-1 flex items-center gap-1 transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa hết
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Bar & Stats Chips -->
+                <div id="xmlProgressContainer" class="hidden space-y-2 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
+                        <span id="xmlProgressText" class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin text-emerald-600"></i> Đang xử lý: 0/0 hóa đơn XML (0%)
+                        </span>
+                        <div class="flex items-center gap-2 text-[11px]">
+                            <span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-md font-mono" id="xmlStatTotal">Tổng: 0</span>
+                            <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-md font-mono" id="xmlStatPending">Chờ: 0</span>
+                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md font-mono" id="xmlStatVerified">Hợp lệ: 0</span>
+                            <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md font-mono" id="xmlStatError">Lỗi: 0</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="xmlProgressBarFill" class="bg-gradient-to-r from-emerald-600 to-teal-500 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- XML Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="text-[11px] text-slate-500 uppercase bg-slate-100 border-b border-slate-200 font-semibold">
+                            <tr>
+                                <th class="py-2.5 px-3 text-center w-10">STT</th>
+                                <th class="py-2.5 px-3 min-w-[160px]">Tệp XML</th>
+                                <th class="py-2.5 px-3 min-w-[120px]">MST Người Bán</th>
+                                <th class="py-2.5 px-3 min-w-[170px]">Tên Người Bán</th>
+                                <th class="py-2.5 px-3 min-w-[80px]">Ký Hiệu</th>
+                                <th class="py-2.5 px-3 min-w-[80px]">Số HĐ</th>
+                                <th class="py-2.5 px-3 min-w-[100px] text-right">Tổng Thanh Toán</th>
+                                <th class="py-2.5 px-3 min-w-[90px] text-center">Ngày Lập</th>
+                                <th class="py-2.5 px-3 min-w-[130px] text-center">Trạng Thái Cổng Thuế</th>
+                                <th class="py-2.5 px-3 min-w-[110px] text-center">Bản Chụp Xác Nhận</th>
+                                <th class="py-2.5 px-3 min-w-[90px] text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="xmlQueueTableBody" class="divide-y divide-slate-100">
+                            <tr id="xmlEmptyQueueRow">
+                                <td colspan="11" class="py-10 text-center text-slate-400">
+                                    <i class="fa-solid fa-file-code text-3xl mb-2 block opacity-40"></i>
+                                    Chưa có hóa đơn XML nào trong danh sách. Hãy kéo thả hoặc chọn tệp .XML ở trên để bắt đầu tra cứu.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- Terminal & Screenshot Preview for XML -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Terminal (7 cols) -->
+                <div class="lg:col-span-7 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 p-4 text-slate-200 flex flex-col">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                            <span class="font-mono text-slate-400 ml-2 font-medium">Nhật Ký RPA Tra Cứu Tab XML (Live Console)</span>
+                        </div>
+                        <div id="xmlRpaStatusIndicator" class="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+                            <span class="w-2 h-2 rounded-full bg-slate-500"></span> Chờ lệnh
+                        </div>
+                    </div>
+                    <div id="xmlLogConsole" class="font-mono text-xs text-emerald-400 p-3 h-64 overflow-y-auto space-y-1.5 bg-black/40 rounded-lg mt-3 border border-slate-800/80 flex-grow">
+                        <p class="text-slate-500">Hệ thống sẵn sàng tra cứu tại tab 'Đọc hóa đơn XML' của Tổng cục Thuế...</p>
+                    </div>
+                </div>
+
+                <!-- Active Screenshot Preview for XML (5 cols) -->
+                <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-stamp text-emerald-600"></i>
+                                <h2 class="text-base font-bold text-slate-800">Bản Chụp Phần Xác Nhận</h2>
+                            </div>
+                            <span id="xmlActiveResultBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                                Chưa có ảnh
+                            </span>
+                        </div>
+
+                        <!-- Toggle preview view (Card vs Fullscreen) -->
+                        <div class="flex items-center gap-2 mb-2">
+                            <button type="button" id="btnViewCrop" onclick="switchXmlPreview('crop')" 
+                                    class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white shadow-xs">
+                                <i class="fa-solid fa-certificate"></i> Bản Chụp Xác Nhận (Mẫu Chuẩn)
+                            </button>
+                            <button type="button" id="btnViewFull" onclick="switchXmlPreview('full')" 
+                                    class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">
+                                <i class="fa-solid fa-desktop"></i> Ảnh Toàn Cảnh
+                            </button>
+                        </div>
+
+                        <div id="xmlActiveResultDetails" class="hidden p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs space-y-1 mb-3">
+                            <div id="xmlActiveResultTitle" class="font-bold text-slate-800"></div>
+                            <div id="xmlActiveResultSub" class="text-slate-500 text-[11px]"></div>
+                        </div>
+
+                        <div class="relative bg-slate-100 rounded-xl overflow-hidden border border-slate-200 group flex items-center justify-center min-h-[220px]">
+                            <div id="xmlActiveScreenshotPlaceholder" class="text-center p-6 text-slate-400 text-xs">
+                                <i class="fa-solid fa-stamp text-3xl mb-2 block opacity-40"></i>
+                                Bản chụp phần xác nhận kiểm tra thông tin hóa đơn XML sẽ hiển thị tại đây sau khi tra cứu.
+                            </div>
+
+                            <img id="xmlActiveScreenshotImg" src="" alt="Bản chụp xác nhận hóa đơn XML" class="hidden w-full h-auto object-cover cursor-pointer hover:opacity-95 transition" onclick="openLightbox(this.src)">
+                            
+                            <div id="xmlActiveScreenshotOverlay" class="hidden absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                <button type="button" onclick="openLightbox(document.getElementById('xmlActiveScreenshotImg').src)" class="bg-white/95 hover:bg-white text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i> Phóng to ảnh
+                                </button>
+                                <a id="btnDownloadXmlActiveScreenshot" href="#" download class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> Tải về
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-slate-400 text-center pt-2">
+                        💡 Bản chụp phần xác nhận được tạo chuẩn theo mẫu xác nhận thông tin hóa đơn của Tổng cục Thuế.
+                    </div>
+                </div>
+            </div>
+
+            <!-- XML History Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-clock-rotate-left text-emerald-600 text-lg"></i>
+                        <h2 class="text-base font-bold text-slate-800">Lịch Sử Xác Thực Hóa Đơn XML</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btnExportXmlHistoryExcel" class="text-xs text-emerald-700 hover:text-emerald-800 flex items-center gap-1 font-semibold transition">
+                            <i class="fa-solid fa-file-excel"></i> Xuất Excel lịch sử
+                        </button>
+                        <button type="button" id="btnClearXmlHistory" class="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 font-medium transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa lịch sử XML
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left text-slate-600">
+                        <thead class="text-[11px] text-slate-500 uppercase bg-slate-50 border-y border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3">Thời Gian</th>
+                                <th class="py-2.5 px-3">Tên File</th>
+                                <th class="py-2.5 px-3">MST Người Bán</th>
+                                <th class="py-2.5 px-3">Ký Hiệu</th>
+                                <th class="py-2.5 px-3">Số HĐ</th>
+                                <th class="py-2.5 px-3">Tổng Tiền</th>
+                                <th class="py-2.5 px-3">Trạng Thái</th>
+                                <th class="py-2.5 px-3 text-right">Bản Chụp Xác Nhận</th>
+                            </tr>
+                        </thead>
+                        <tbody id="xmlHistoryTableBody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="8" class="py-6 text-center text-slate-400">Đang tải lịch sử tra cứu XML...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-300">©</span>
+                <span class="font-semibold text-slate-800">2026 NDKBVH.</span>
+                <span class="text-slate-600">Bảo lưu mọi quyền (All Rights Reserved).</span>
+            </div>
+            <div class="text-[11px] text-slate-400 text-center sm:text-right">
+                Hệ Thống Tra Cứu Hóa Đơn Điện Tử, Người Nộp Thuế & Đọc XML Tự Động • Bản quyền tác giả thuộc về <b>NDKBVH</b>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lightbox Modal -->
+    <div id="lightboxModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onclick="closeLightbox()">
+        <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white hover:text-red-400 text-xl font-bold">
+                <i class="fa-solid fa-xmark"></i> Đóng
+            </button>
+            <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] rounded-lg shadow-2xl border border-slate-700 object-contain">
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js?v=20261118_v4"></script>
+</body>
+</html>

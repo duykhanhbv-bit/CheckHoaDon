@@ -1,0 +1,75 @@
+# =========================================================================
+# .gitignore - CheckHoaDon
+# Nguyên tắc: KHÔNG đưa lên Git hóa đơn thật/mẫu, dữ liệu lịch sử,
+# ảnh chụp xác nhận, môi trường máy, bản build và thông tin nội bộ.
+# =========================================================================
+
+# ---------- 1. Hóa đơn mẫu & dữ liệu đã test (KHÔNG commit) ----------
+HoaDonTest/
+sample_invoices/
+scratch/
+*.pdf
+*.xml
+*.xlsx
+*.xls
+*.csv
+
+# ---------- 2. Dữ liệu lịch sử & ảnh chụp xác nhận (chứa thông tin hóa đơn) ----------
+data/*
+!data/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
+static/screenshots/*
+!static/screenshots/.gitkeep
+static/webapp_*.png
+
+# ---------- 3. Môi trường Python & trình duyệt portable (rất lớn, tạo lại được) ----------
+python_env/
+pw-browsers/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# ---------- 4. Bản build, bộ cài & gói phân phối ----------
+dist/
+build/
+*.exe
+*.zip
+*.msi
+*.iss.bak
+*.log
+CheckHoaDon.exe
+
+# ---------- 5. Ghi chú nội bộ, lịch sử prompt & quản lý task ----------
+.agent/
+.claude/
+TASKS.md
+
+# ---------- 6. Bí mật, cấu hình cục bộ, khóa & chứng thư số ----------
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.pfx
+*.p12
+*.cer
+*.crt
+secrets.*
+*.local.json
+
+# ---------- 7. Rác hệ điều hành & IDE ----------
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+# ---------- 8. Tệp tạm của Playwright/Node ----------
+node_modules/
+test-results/
+playwright-report/
