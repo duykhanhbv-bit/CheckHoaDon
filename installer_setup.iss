@@ -1,6 +1,6 @@
 ; Inno Setup Script for CheckHoaDon
 #define MyAppName "He Thong Tra Cuu Hoa Don Dien Tu & NNT"
-#define MyAppVersion "1.4.0"
+#define MyAppVersion "1.4.1"
 #define MyAppPublisher "NDKBVH"
 #define MyAppExeName "CheckHoaDon.exe"
 
@@ -17,7 +17,7 @@ DefaultDirName={autopf}\CheckHoaDon
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=dist
-OutputBaseFilename=CheckHoaDon_Setup_v1.4
+OutputBaseFilename=CheckHoaDon_Setup_v1.4.1
 SetupIconFile=app_icon.ico
 Compression=lzma2/fast
 SolidCompression=yes
@@ -51,9 +51,8 @@ Source: "doi_cong.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "PORT.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "COPYRIGHT.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "static\*"; DestDir: "{app}\static"; Excludes: "screenshots,screenshots\*,uploads,uploads\*"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "static\*"; DestDir: "{app}\static"; Excludes: "screenshots,screenshots\*,uploads,uploads\*,webapp_*.png"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "templates\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "sample_invoices\*"; DestDir: "{app}\sample_invoices"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#CacheDir}\python_env\*"; DestDir: "{app}\python_env"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#CacheDir}\pw-browsers\*"; DestDir: "{app}\pw-browsers"; Flags: ignoreversion recursesubdirs createallsubdirs
 
