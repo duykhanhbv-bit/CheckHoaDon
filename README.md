@@ -129,12 +129,20 @@ CheckHoaDon/
 
 ## 🚀 Cài đặt & chạy
 
-### Yêu cầu
+### ⚡ Cách nhanh nhất: tải bộ cài Windows
+
+[![Tải bộ cài](https://img.shields.io/github/v/release/duykhanhbv-bit/CheckHoaDon?label=T%E1%BA%A3i%20b%E1%BB%99%20c%C3%A0i&logo=windows&color=brightgreen)](https://github.com/duykhanhbv-bit/CheckHoaDon/releases/latest)
+
+Vào trang [**Releases**](https://github.com/duykhanhbv-bit/CheckHoaDon/releases/latest), tải `CheckHoaDon_Setup_*.exe` (~522 MB, đã kèm sẵn Python và Chromium) rồi chạy. Không cần cài thêm gì. Bộ cài chưa có chữ ký số nên SmartScreen có thể cảnh báo; chọn *More info → Run anyway*.
+
+### Hoặc chạy từ mã nguồn
+
+#### Yêu cầu
 - **Windows 10/11** (chức năng chụp toàn màn hình dùng Win32 API)
 - **Python 3.12**
 - Kết nối Internet tới `hoadondientu.gdt.gov.vn`
 
-### Các bước
+#### Các bước
 
 ```powershell
 # 1. Tạo môi trường ảo và cài thư viện
