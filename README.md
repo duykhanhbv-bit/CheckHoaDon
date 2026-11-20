@@ -211,6 +211,16 @@ Tương đương: `python package.py --bump minor|patch|major`. Yêu cầu đã 
 
 ---
 
+## ☕ Ủng hộ dự án
+
+Nếu công cụ giúp bạn tiết kiệm thời gian đối soát hóa đơn, bạn có thể ủng hộ tác giả một ly cà phê để dự án tiếp tục được cải tiến. Xin cảm ơn! 💚
+
+<p align="center">
+  <img src="docs/images/sponsor_qr.png" alt="QR ủng hộ check hóa đơn - Vietcombank VietQR" width="280">
+</p>
+
+---
+
 ## 📜 Bản quyền
 
 **Copyright © 2026 NDKBVH. Bảo lưu mọi quyền.** Xem chi tiết tại [COPYRIGHT.md](COPYRIGHT.md).
